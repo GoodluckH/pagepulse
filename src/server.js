@@ -99,6 +99,37 @@ app.delete('/api/monitors/:id', auth, (req, res) => {
   res.json({ success: true });
 });
 
+// Manual check endpoint
+app.post('/api/monitors/:id/check', auth, async (req, res) => {
+  const monitor = db.getMonitor(req.params.id);
+  if (!monitor || monitor.userId !== req.user.id) {
+    return res.status(404).json({ error: 'Monitor not found' });
+  }
+  
+  console.log(`[MANUAL CHECK] ${monitor.name} (${monitor.url})`);
+  const result = await checkPage(monitor.url, monitor.selector);
+  
+  if (!result.success) {
+    db.addCheck(monitor.id, { error: result.error, changed: false });
+    db.updateMonitor(monitor.id, { lastCheck: new Date().toISOString() });
+    return res.json({ success: false, error: result.error });
+  }
+  
+  const changed = monitor.lastHash && monitor.lastHash !== result.hash;
+  db.addCheck(monitor.id, { hash: result.hash, changed, error: null });
+  db.updateMonitor(monitor.id, {
+    lastCheck: new Date().toISOString(),
+    lastHash: result.hash
+  });
+  
+  res.json({ 
+    success: true, 
+    changed,
+    hash: result.hash.substring(0, 16) + '...',
+    checkedAt: new Date().toISOString()
+  });
+});
+
 app.get('/api/account', auth, (req, res) => {
   const monitors = db.getMonitorsByUser(req.user.id);
   res.json({
