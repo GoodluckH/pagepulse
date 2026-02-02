@@ -55,6 +55,10 @@ class DB {
     return Object.values(this.data.users).find(u => u.apiKey === apiKey);
   }
 
+  getUserById(id) {
+    return this.data.users[id];
+  }
+
   // Monitors
   createMonitor(userId, { name, url, checkInterval, selector, notifyWebhook }) {
     const id = crypto.randomUUID();
