@@ -59,6 +59,10 @@ class DB {
     return this.data.users[id];
   }
 
+  getUserById(id) {
+    return this.data.users[id];
+  }
+
   // Monitors
   createMonitor(userId, { name, url, checkInterval, selector, notifyWebhook }) {
     const id = crypto.randomUUID();

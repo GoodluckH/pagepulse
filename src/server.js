@@ -3,7 +3,6 @@ const path = require('path');
 const crypto = require('crypto');
 const db = require('./db');
 const { checkPage } = require('./checker');
-const { sendNotification } = require('./notifier');
 const { notifyChange, notifyWebhook } = require('./notifier');
 
 const app = express();
@@ -171,12 +170,19 @@ async function runScheduler() {
     
     if (changed) {
       console.log(`  🔔 CHANGE DETECTED!`);
-      // Send notifications
+      
+      // Send email notification
       const user = db.getUserById(monitor.userId);
-      if (user) {
-        sendNotification(monitor, user, {
-          checkedAt: new Date().toISOString(),
-          hash: result.hash
+      if (user && monitor.notifyEmail !== false) {
+        notifyChange(monitor, user).catch(err => {
+          console.error(`  ❌ Email failed: ${err.message}`);
+        });
+      }
+      
+      // Send webhook notification
+      if (monitor.notifyWebhook) {
+        notifyWebhook(monitor, monitor.notifyWebhook).catch(err => {
+          console.error(`  ❌ Webhook failed: ${err.message}`);
         });
       }
     } else {
