@@ -91,6 +91,26 @@ app.get('/api/monitors/:id', auth, (req, res) => {
   res.json({ monitor, checks });
 });
 
+// Get check history for a monitor
+app.get('/api/monitors/:id/history', auth, (req, res) => {
+  const monitor = db.getMonitor(req.params.id);
+  if (!monitor || monitor.userId !== req.user.id) {
+    return res.status(404).json({ error: 'Monitor not found' });
+  }
+  const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+  const checks = db.getChecksByMonitor(monitor.id, limit);
+  
+  const summary = {
+    totalChecks: checks.length,
+    changesDetected: checks.filter(c => c.changed).length,
+    errors: checks.filter(c => c.error).length,
+    lastCheck: monitor.lastCheck,
+    lastChange: checks.find(c => c.changed)?.checkedAt || null
+  };
+  
+  res.json({ monitor: { id: monitor.id, name: monitor.name, url: monitor.url }, summary, checks });
+});
+
 app.delete('/api/monitors/:id', auth, (req, res) => {
   const monitor = db.getMonitor(req.params.id);
   if (!monitor || monitor.userId !== req.user.id) {
