@@ -110,6 +110,18 @@
   </div>
 </section>
 
+<section style="padding:60px 0;background:#f0f4ff;text-align:center">
+  <div class="container">
+    <h2 style="margin-bottom:15px">📬 Get Updates</h2>
+    <p style="margin-bottom:25px;color:#666">Not ready to sign up? Get notified about new features and tips.</p>
+    <div style="max-width:400px;margin:0 auto">
+      <input type="email" id="newsletter-email" placeholder="you@example.com" style="width:70%;padding:12px;border:1px solid #ddd;border-radius:8px 0 0 8px;font-size:1rem">
+      <button onclick="subscribeNewsletter()" style="width:28%;padding:12px;background:#667eea;color:#fff;border:none;border-radius:0 8px 8px 0;font-size:1rem;cursor:pointer">Subscribe</button>
+      <div id="newsletter-result" style="margin-top:10px"></div>
+    </div>
+  </div>
+</section>
+
 <section class="cta" id="signup">
   <div class="container">
     <h2>Start Monitoring in 30 Seconds</h2>
@@ -138,6 +150,18 @@ async function signup(){
     if(d.success){r.className='ok';r.innerHTML='✅ Account created!<br>API Key: <code>'+d.api_key+'</code><br>Save this!';}
     else{r.className='err';r.textContent='❌ '+d.error;}
   }catch(e){r.className='err';r.textContent='❌ Error. Try again.';}
+}
+
+async function subscribeNewsletter(){
+  const email=document.getElementById('newsletter-email').value;
+  const r=document.getElementById('newsletter-result');
+  if(!email||!email.includes('@')){r.innerHTML='<span style="color:#c00">Please enter a valid email</span>';return;}
+  try{
+    const res=await fetch('/api/newsletter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d=await res.json();
+    if(d.success){r.innerHTML='<span style="color:#155724">✅ Subscribed! We\'ll keep you posted.</span>';}
+    else{r.innerHTML='<span style="color:#c00">'+d.error+'</span>';}
+  }catch(e){r.innerHTML='<span style="color:#c00">Error. Try again.</span>';}
 }
 </script>
 </body>

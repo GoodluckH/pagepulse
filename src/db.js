@@ -16,12 +16,15 @@ console.log(`📁 Database path: ${DB_PATH}`);
 function loadDB() {
   try {
     if (fs.existsSync(DB_PATH)) {
-      return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+      // Ensure newsletter array exists
+      if (!data.newsletter) data.newsletter = [];
+      return data;
     }
   } catch (e) {
     console.error('DB load error:', e);
   }
-  return { users: {}, monitors: {}, checks: [] };
+  return { users: {}, monitors: {}, checks: [], newsletter: [] };
 }
 
 function saveDB(data) {
@@ -150,12 +153,32 @@ class DB {
       .reverse();
   }
 
+  // Newsletter
+  addNewsletterSubscriber(email) {
+    if (!this.data.newsletter) this.data.newsletter = [];
+    if (this.data.newsletter.some(s => s.email === email)) {
+      return null; // Already subscribed
+    }
+    const sub = {
+      email,
+      subscribedAt: new Date().toISOString()
+    };
+    this.data.newsletter.push(sub);
+    this.save();
+    return sub;
+  }
+
+  getNewsletterSubscribers() {
+    return this.data.newsletter || [];
+  }
+
   // Stats
   getStats() {
     return {
       users: Object.keys(this.data.users).length,
       monitors: Object.keys(this.data.monitors).length,
-      checks: this.data.checks.length
+      checks: this.data.checks.length,
+      newsletter: (this.data.newsletter || []).length
     };
   }
 }

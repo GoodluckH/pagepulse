@@ -161,6 +161,22 @@ app.get('/api/account', auth, (req, res) => {
   });
 });
 
+// Newsletter subscription
+app.post('/api/newsletter', (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+  
+  const sub = db.addNewsletterSubscriber(email.toLowerCase().trim());
+  if (sub === null) {
+    return res.json({ success: true, message: 'Already subscribed!' });
+  }
+  
+  console.log(`[NEWSLETTER] New subscriber: ${email}`);
+  res.json({ success: true });
+});
+
 // Health & stats
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.get('/api/stats', (req, res) => res.json(db.getStats()));
