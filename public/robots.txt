@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://pagepulse-production-46e4.up.railway.app/sitemap.xml
