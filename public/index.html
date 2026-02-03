@@ -13,7 +13,27 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PagePulse - Website Change Monitoring">
   <meta name="twitter:description" content="Get alerts when any webpage changes. Free to start.">
-  <link rel="canonical" href="https://remarkable-renewal-production.up.railway.app">
+  <link rel="canonical" href="https://pagepulse-production-eed6.up.railway.app">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PagePulse",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Monitor any webpage for changes. Get instant alerts when prices drop, jobs post, or content updates.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "1"
+    }
+  }
+  </script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;color:#1a1a1a}
@@ -169,6 +189,34 @@
       <div class="card blog-card">
         <h3><a href="/blog/competitor-monitoring.html">Competitor Website Monitoring</a></h3>
         <p>Track competitor pricing, features, and strategy changes automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:60px 0;background:#f8f9fa" id="faq">
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:40px">❓ Frequently Asked Questions</h2>
+    <div style="max-width:800px;margin:0 auto">
+      <div class="card" style="margin-bottom:15px">
+        <h3 style="color:#667eea;margin-bottom:10px">How does website monitoring work?</h3>
+        <p style="color:#666;margin:0">PagePulse checks your target URL at regular intervals and compares the content to previous checks. When something changes, you get an instant notification via email or webhook.</p>
+      </div>
+      <div class="card" style="margin-bottom:15px">
+        <h3 style="color:#667eea;margin-bottom:10px">Can I monitor any website?</h3>
+        <p style="color:#666;margin:0">Yes! You can monitor any publicly accessible webpage - product pages, job boards, competitor sites, news articles, government pages, and more.</p>
+      </div>
+      <div class="card" style="margin-bottom:15px">
+        <h3 style="color:#667eea;margin-bottom:10px">What are CSS selectors?</h3>
+        <p style="color:#666;margin:0">CSS selectors let you monitor specific parts of a page instead of the whole thing. For example, use ".price" to only track the price element, ignoring ads and other changes.</p>
+      </div>
+      <div class="card" style="margin-bottom:15px">
+        <h3 style="color:#667eea;margin-bottom:10px">How fast will I get alerts?</h3>
+        <p style="color:#666;margin:0">Alerts are sent within seconds of detecting a change. Check frequency depends on your plan: daily (Free), hourly (Pro), or every 5 minutes (Team).</p>
+      </div>
+      <div class="card" style="margin-bottom:15px">
+        <h3 style="color:#667eea;margin-bottom:10px">Is there an API?</h3>
+        <p style="color:#666;margin:0">Yes! PagePulse has a full REST API. Create monitors programmatically, trigger checks, and integrate with your existing workflows. <a href="/docs.html">View API docs →</a></p>
       </div>
     </div>
   </div>
