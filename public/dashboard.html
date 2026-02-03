@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - PagePulse</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;min-height:100vh}
+    .nav{background:#667eea;color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
+    .nav h1{font-size:1.25rem}
+    .nav button{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer}
+    .container{max-width:1000px;margin:0 auto;padding:20px}
+    .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}
+    .stat{background:#fff;padding:20px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+    .stat-value{font-size:2rem;font-weight:700;color:#667eea}
+    .stat-label{color:#666;font-size:0.9rem}
+    h2{margin-bottom:15px;color:#333}
+    .monitor{border:1px solid #eee;border-radius:8px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+    .monitor-info h3{font-size:1rem;margin-bottom:5px}
+    .monitor-info p{color:#666;font-size:0.85rem}
+    .monitor-status{padding:6px 12px;border-radius:20px;font-size:0.8rem;font-weight:600}
+    .status-active{background:#d4edda;color:#155724}
+    .status-error{background:#f8d7da;color:#721c24}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+    .btn-primary{background:#667eea;color:#fff}
+    .btn-sm{padding:6px 12px;font-size:0.85rem}
+    .form-group{margin-bottom:15px}
+    .form-group label{display:block;margin-bottom:5px;font-weight:500}
+    .form-group input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+    #login-section,#dashboard-section{display:none}
+    .empty{text-align:center;padding:40px;color:#666}
+    .actions{display:flex;gap:10px}
+  </style>
+</head>
+<body>
+
+<div id="login-section">
+  <div class="nav"><h1>🔔 PagePulse</h1></div>
+  <div class="container" style="max-width:400px;margin-top:50px">
+    <div class="card">
+      <h2>Login to Dashboard</h2>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Your password">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="login()">Login</button>
+      <p style="margin-top:15px;text-align:center;color:#666">
+        Don't have an account? <a href="/#signup">Sign up</a>
+      </p>
+      <div id="login-error" style="margin-top:15px;color:#dc3545;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div id="dashboard-section">
+  <div class="nav">
+    <h1>🔔 PagePulse</h1>
+    <button onclick="logout()">Logout</button>
+  </div>
+  <div class="container">
+    <div class="stats">
+      <div class="stat"><div class="stat-value" id="stat-monitors">0</div><div class="stat-label">Monitors</div></div>
+      <div class="stat"><div class="stat-value" id="stat-checks">0</div><div class="stat-label">Total Checks</div></div>
+      <div class="stat"><div class="stat-value" id="stat-plan">Free</div><div class="stat-label">Plan</div></div>
+    </div>
+    
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+        <h2>Your Monitors</h2>
+        <button class="btn btn-primary btn-sm" onclick="showAddMonitor()">+ Add Monitor</button>
+      </div>
+      <div id="monitors-list"><div class="empty">Loading...</div></div>
+    </div>
+    
+    <div class="card" id="add-monitor-form" style="display:none">
+      <h2>Add New Monitor</h2>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="monitor-name" placeholder="My Price Tracker">
+      </div>
+      <div class="form-group">
+        <label>URL to Monitor</label>
+        <input type="url" id="monitor-url" placeholder="https://example.com/product">
+      </div>
+      <div class="form-group">
+        <label>Webhook URL (optional)</label>
+        <input type="url" id="monitor-webhook" placeholder="https://hooks.slack.com/...">
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="addMonitor()">Create Monitor</button>
+        <button class="btn" onclick="hideAddMonitor()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let apiKey = localStorage.getItem('pagepulse_key');
+
+window.onload = () => {
+  if (apiKey) { showDashboard(); } 
+  else { document.getElementById('login-section').style.display = 'block'; }
+};
+
+async function login() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const data = await res.json();
+    if (data.success) {
+      apiKey = data.api_key;
+      localStorage.setItem('pagepulse_key', apiKey);
+      showDashboard();
+    } else {
+      document.getElementById('login-error').textContent = data.error;
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Connection error';
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('pagepulse_key');
+  apiKey = null;
+  location.reload();
+}
+
+async function showDashboard() {
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('dashboard-section').style.display = 'block';
+  await loadAccount();
+  await loadMonitors();
+}
+
+async function loadAccount() {
+  const res = await fetch('/api/account', {headers: {'X-API-Key': apiKey}});
+  const data = await res.json();
+  document.getElementById('stat-monitors').textContent = data.monitors;
+  document.getElementById('stat-plan').textContent = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+}
+
+async function loadMonitors() {
+  const res = await fetch('/api/monitors', {headers: {'X-API-Key': apiKey}});
+  const data = await res.json();
+  const list = document.getElementById('monitors-list');
+  
+  if (data.monitors.length === 0) {
+    list.innerHTML = '<div class="empty">No monitors yet. Create your first one!</div>';
+    document.getElementById('stat-checks').textContent = '0';
+    return;
+  }
+  
+  let totalChecks = 0;
+  list.innerHTML = data.monitors.map(m => {
+    const status = m.lastCheck ? 'active' : 'pending';
+    return `
+      <div class="monitor">
+        <div class="monitor-info">
+          <h3>${m.name}</h3>
+          <p>${m.url}</p>
+          <p>Last check: ${m.lastCheck ? new Date(m.lastCheck).toLocaleString() : 'Never'}</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-sm" onclick="checkNow('${m.id}')">Check Now</button>
+          <span class="monitor-status status-${status}">${status}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function checkNow(id) {
+  const res = await fetch(`/api/monitors/${id}/check`, {
+    method: 'POST',
+    headers: {'X-API-Key': apiKey}
+  });
+  const data = await res.json();
+  alert(data.success ? (data.changed ? '🔔 Change detected!' : '✓ No change') : '❌ ' + data.error);
+  loadMonitors();
+}
+
+function showAddMonitor() { document.getElementById('add-monitor-form').style.display = 'block'; }
+function hideAddMonitor() { document.getElementById('add-monitor-form').style.display = 'none'; }
+
+async function addMonitor() {
+  const name = document.getElementById('monitor-name').value;
+  const url = document.getElementById('monitor-url').value;
+  const webhook = document.getElementById('monitor-webhook').value;
+  
+  const res = await fetch('/api/monitors', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-API-Key': apiKey},
+    body: JSON.stringify({name, url, notify_webhook: webhook || undefined})
+  });
+  const data = await res.json();
+  
+  if (data.success) {
+    hideAddMonitor();
+    document.getElementById('monitor-name').value = '';
+    document.getElementById('monitor-url').value = '';
+    document.getElementById('monitor-webhook').value = '';
+    loadMonitors();
+    loadAccount();
+  } else {
+    alert('Error: ' + data.error);
+  }
+}
+</script>
+</body>
+</html>
