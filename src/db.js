@@ -2,7 +2,16 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const DB_PATH = path.join(__dirname, '../data/db.json');
+// Use DATA_DIR env var for Railway volume, fallback to local data folder
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../data');
+const DB_PATH = path.join(DATA_DIR, 'db.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+console.log(`📁 Database path: ${DB_PATH}`);
 
 function loadDB() {
   try {
