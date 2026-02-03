@@ -34,7 +34,7 @@
 <div class="nav"><h1>🔔 PagePulse API Documentation</h1></div>
 <div class="container">
 
-<p>Base URL: <code>https://pagepulse-production-46e4.up.railway.app</code></p>
+<p>Base URL: <code>https://pagepulse-production-ed44.up.railway.app</code></p>
 <p>Authentication: Include your API key in the <code>X-API-Key</code> header.</p>
 
 <h2>Authentication</h2>
@@ -132,18 +132,18 @@
 
 <h2>Example: cURL</h2>
 <pre># Register
-curl -X POST https://pagepulse-production-46e4.up.railway.app/api/register \
+curl -X POST https://pagepulse-production-ed44.up.railway.app/api/register \
   -H "Content-Type: application/json" \
   -d '{"email":"me@example.com","password":"secret123"}'
 
 # Create monitor
-curl -X POST https://pagepulse-production-46e4.up.railway.app/api/monitors \
+curl -X POST https://pagepulse-production-ed44.up.railway.app/api/monitors \
   -H "Content-Type: application/json" \
   -H "X-API-Key: pp_your_key" \
   -d '{"name":"My Site","url":"https://example.com"}'
 
 # Trigger check
-curl -X POST https://pagepulse-production-46e4.up.railway.app/api/monitors/MONITOR_ID/check \
+curl -X POST https://pagepulse-production-ed44.up.railway.app/api/monitors/MONITOR_ID/check \
   -H "X-API-Key: pp_your_key"</pre>
 
 <p style="margin-top:40px;text-align:center;color:#666">
