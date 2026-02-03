@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://illustrious-surprise-production-0701.up.railway.app/</loc>
+    <loc>https://pagepulse-production-55f0.up.railway.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://illustrious-surprise-production-0701.up.railway.app/docs.html</loc>
+    <loc>https://pagepulse-production-55f0.up.railway.app/docs.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://illustrious-surprise-production-0701.up.railway.app/dashboard.html</loc>
+    <loc>https://pagepulse-production-55f0.up.railway.app/dashboard.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://illustrious-surprise-production-0701.up.railway.app/blog/website-monitoring-guide.html</loc>
+    <loc>https://pagepulse-production-55f0.up.railway.app/blog/website-monitoring-guide.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://illustrious-surprise-production-0701.up.railway.app/blog/price-drop-alerts.html</loc>
+    <loc>https://pagepulse-production-55f0.up.railway.app/blog/price-drop-alerts.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
