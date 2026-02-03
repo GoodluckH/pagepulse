@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Docs - PagePulse</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,monospace;line-height:1.6;color:#1a1a1a;background:#f8f9fa}
+    .nav{background:#667eea;color:#fff;padding:15px 20px}
+    .nav h1{font-size:1.25rem}
+    .container{max-width:900px;margin:0 auto;padding:40px 20px}
+    h1{margin-bottom:10px}
+    h2{margin:40px 0 20px;padding-top:20px;border-top:1px solid #ddd}
+    h3{margin:25px 0 10px;color:#667eea}
+    p{margin-bottom:15px;color:#444}
+    code{background:#e9ecef;padding:2px 6px;border-radius:4px;font-size:0.9em}
+    pre{background:#2d2d2d;color:#f8f8f2;padding:20px;border-radius:8px;overflow-x:auto;margin:15px 0}
+    .method{display:inline-block;padding:4px 10px;border-radius:4px;font-weight:700;font-size:0.85rem;margin-right:10px}
+    .get{background:#61affe;color:#fff}
+    .post{background:#49cc90;color:#fff}
+    .delete{background:#f93e3e;color:#fff}
+    .endpoint{font-family:monospace;font-size:1.1rem}
+    .param{background:#fff;border:1px solid #ddd;border-radius:6px;padding:15px;margin:10px 0}
+    .param-name{font-weight:700;color:#667eea}
+    .required{color:#f93e3e;font-size:0.8rem}
+    table{width:100%;border-collapse:collapse;margin:15px 0}
+    th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd}
+    th{background:#f1f1f1}
+    a{color:#667eea}
+  </style>
+</head>
+<body>
+<div class="nav"><h1>🔔 PagePulse API Documentation</h1></div>
+<div class="container">
+
+<p>Base URL: <code>https://pagepulse-production-46e4.up.railway.app</code></p>
+<p>Authentication: Include your API key in the <code>X-API-Key</code> header.</p>
+
+<h2>Authentication</h2>
+
+<h3><span class="method post">POST</span> <span class="endpoint">/api/register</span></h3>
+<p>Create a new account and get your API key.</p>
+<pre>{
+  "email": "you@example.com",
+  "password": "your-password"
+}</pre>
+<p><strong>Response:</strong></p>
+<pre>{
+  "success": true,
+  "api_key": "pp_abc123...",
+  "plan": "free"
+}</pre>
+
+<h3><span class="method post">POST</span> <span class="endpoint">/api/login</span></h3>
+<p>Login to get your API key.</p>
+<pre>{
+  "email": "you@example.com",
+  "password": "your-password"
+}</pre>
+
+<h2>Monitors</h2>
+
+<h3><span class="method get">GET</span> <span class="endpoint">/api/monitors</span></h3>
+<p>List all your monitors.</p>
+<p><strong>Headers:</strong> <code>X-API-Key: your_key</code></p>
+
+<h3><span class="method post">POST</span> <span class="endpoint">/api/monitors</span></h3>
+<p>Create a new monitor.</p>
+<pre>{
+  "name": "Price Tracker",
+  "url": "https://example.com/product",
+  "check_interval": 3600,        // optional, seconds (min depends on plan)
+  "selector": ".price",          // optional, CSS selector
+  "notify_webhook": "https://..."  // optional, webhook URL
+}</pre>
+
+<h3><span class="method get">GET</span> <span class="endpoint">/api/monitors/:id</span></h3>
+<p>Get a specific monitor with its check history.</p>
+
+<h3><span class="method get">GET</span> <span class="endpoint">/api/monitors/:id/history</span></h3>
+<p>Get detailed check history with summary stats.</p>
+<p><strong>Query params:</strong> <code>?limit=50</code> (max 100)</p>
+
+<h3><span class="method post">POST</span> <span class="endpoint">/api/monitors/:id/check</span></h3>
+<p>Trigger an immediate check for a monitor.</p>
+<p><strong>Response:</strong></p>
+<pre>{
+  "success": true,
+  "changed": false,
+  "hash": "abc123...",
+  "checkedAt": "2026-02-03T00:00:00.000Z"
+}</pre>
+
+<h3><span class="method delete">DELETE</span> <span class="endpoint">/api/monitors/:id</span></h3>
+<p>Delete a monitor.</p>
+
+<h2>Account</h2>
+
+<h3><span class="method get">GET</span> <span class="endpoint">/api/account</span></h3>
+<p>Get your account info and limits.</p>
+<pre>{
+  "email": "you@example.com",
+  "plan": "free",
+  "monitors": 2,
+  "limits": {
+    "monitors": 3,
+    "minInterval": 86400
+  }
+}</pre>
+
+<h2>Webhooks</h2>
+<p>When a change is detected, PagePulse sends a POST request to your webhook URL:</p>
+<pre>{
+  "event": "change_detected",
+  "monitor": {
+    "id": "abc-123",
+    "name": "My Monitor",
+    "url": "https://example.com"
+  },
+  "checkedAt": "2026-02-03T00:00:00.000Z",
+  "message": "Change detected on \"My Monitor\""
+}</pre>
+
+<h2>Rate Limits</h2>
+<table>
+  <tr><th>Plan</th><th>Monitors</th><th>Min Check Interval</th></tr>
+  <tr><td>Free</td><td>3</td><td>Daily (86400s)</td></tr>
+  <tr><td>Pro ($9/mo)</td><td>25</td><td>Hourly (3600s)</td></tr>
+  <tr><td>Team ($29/mo)</td><td>100</td><td>5 minutes (300s)</td></tr>
+</table>
+
+<h2>Example: cURL</h2>
+<pre># Register
+curl -X POST https://pagepulse-production-46e4.up.railway.app/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"me@example.com","password":"secret123"}'
+
+# Create monitor
+curl -X POST https://pagepulse-production-46e4.up.railway.app/api/monitors \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pp_your_key" \
+  -d '{"name":"My Site","url":"https://example.com"}'
+
+# Trigger check
+curl -X POST https://pagepulse-production-46e4.up.railway.app/api/monitors/MONITOR_ID/check \
+  -H "X-API-Key: pp_your_key"</pre>
+
+<p style="margin-top:40px;text-align:center;color:#666">
+  <a href="/">← Back to Home</a> | <a href="/dashboard.html">Dashboard</a>
+</p>
+
+</div>
+</body>
+</html>
