@@ -57,8 +57,27 @@ async function sendEmail({ to, subject, html, text }) {
 /**
  * Send change notification for a monitor
  */
-async function notifyChange(monitor, user) {
+async function notifyChange(monitor, user, diff = null) {
   const subject = `🔔 Change detected: ${monitor.name}`;
+  
+  // Build diff HTML if available
+  let diffHtml = '';
+  let diffText = '';
+  if (diff) {
+    diffHtml = `
+      <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0 0 8px 0; font-weight: 600; color: #92400e;">What Changed:</p>
+        <p style="margin: 0; color: #78350f;">${diff.summary || 'Content updated'}</p>
+        ${diff.removed?.length ? `<p style="margin: 8px 0 0 0; color: #dc2626;"><strong>Removed:</strong> ${diff.removed.slice(0, 10).join(', ')}</p>` : ''}
+        ${diff.added?.length ? `<p style="margin: 8px 0 0 0; color: #16a34a;"><strong>Added:</strong> ${diff.added.slice(0, 10).join(', ')}</p>` : ''}
+      </div>
+    `;
+    diffText = `
+What Changed: ${diff.summary || 'Content updated'}
+${diff.removed?.length ? `Removed: ${diff.removed.slice(0, 10).join(', ')}` : ''}
+${diff.added?.length ? `Added: ${diff.added.slice(0, 10).join(', ')}` : ''}
+`;
+  }
   
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -71,6 +90,8 @@ async function notifyChange(monitor, user) {
         ${monitor.selector ? `<p style="margin: 0 0 8px 0;"><strong>Selector:</strong> ${monitor.selector}</p>` : ''}
         <p style="margin: 0;"><strong>Detected at:</strong> ${new Date().toUTCString()}</p>
       </div>
+      
+      ${diffHtml}
       
       <p><a href="${monitor.url}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View Page</a></p>
       
@@ -88,7 +109,7 @@ Monitor: ${monitor.name}
 URL: ${monitor.url}
 ${monitor.selector ? `Selector: ${monitor.selector}` : ''}
 Detected at: ${new Date().toUTCString()}
-
+${diffText}
 Visit the page: ${monitor.url}
   `.trim();
 
@@ -103,7 +124,7 @@ Visit the page: ${monitor.url}
 /**
  * Send webhook notification (if configured)
  */
-async function notifyWebhook(monitor, webhookUrl) {
+async function notifyWebhook(monitor, webhookUrl, diff = null) {
   if (!webhookUrl) return { success: false, error: 'No webhook URL' };
 
   const payload = JSON.stringify({
@@ -114,6 +135,11 @@ async function notifyWebhook(monitor, webhookUrl) {
       url: monitor.url,
       selector: monitor.selector
     },
+    diff: diff ? {
+      summary: diff.summary,
+      added: diff.added,
+      removed: diff.removed
+    } : null,
     timestamp: new Date().toISOString()
   });
 

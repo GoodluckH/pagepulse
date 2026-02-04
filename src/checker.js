@@ -67,10 +67,59 @@ async function checkPage(url, selector = null) {
     
     const hash = crypto.createHash('sha256').update(normalized).digest('hex');
     
-    return { success: true, hash, preview: normalized.slice(0, 300) };
+    // Extract text-only version for diff (remove HTML tags)
+    const textContent = normalized
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 10000); // Limit to 10KB for storage
+    
+    return { success: true, hash, preview: normalized.slice(0, 300), content: textContent };
   } catch (error) {
     return { success: false, error: error.message };
   }
 }
 
-module.exports = { checkPage };
+// Compute a simple line-by-line diff
+function computeDiff(oldContent, newContent) {
+  if (!oldContent || !newContent) return null;
+  
+  const oldWords = oldContent.split(/\s+/);
+  const newWords = newContent.split(/\s+/);
+  
+  const added = [];
+  const removed = [];
+  
+  // Simple word-level diff
+  const oldSet = new Set(oldWords);
+  const newSet = new Set(newWords);
+  
+  for (const word of newWords) {
+    if (!oldSet.has(word) && word.length > 2) {
+      added.push(word);
+    }
+  }
+  
+  for (const word of oldWords) {
+    if (!newSet.has(word) && word.length > 2) {
+      removed.push(word);
+    }
+  }
+  
+  // Generate summary
+  let summary = '';
+  if (removed.length > 0) {
+    summary += `Removed: "${removed.slice(0, 5).join(', ')}${removed.length > 5 ? '...' : ''}" `;
+  }
+  if (added.length > 0) {
+    summary += `Added: "${added.slice(0, 5).join(', ')}${added.length > 5 ? '...' : ''}"`;
+  }
+  
+  return {
+    added: added.slice(0, 20),
+    removed: removed.slice(0, 20),
+    summary: summary.trim() || 'Content structure changed'
+  };
+}
+
+module.exports = { checkPage, computeDiff };

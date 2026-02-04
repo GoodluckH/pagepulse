@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
 const db = require('./db');
-const { checkPage } = require('./checker');
+const { checkPage, computeDiff } = require('./checker');
 const { notifyChange, notifyWebhook } = require('./notifier');
 
 const app = express();
@@ -250,10 +250,27 @@ async function runScheduler() {
     }
     
     const changed = monitor.lastHash && monitor.lastHash !== result.hash;
-    db.addCheck(monitor.id, { hash: result.hash, changed, error: null });
+    
+    // Compute diff if changed
+    let diff = null;
+    if (changed && monitor.lastContent) {
+      diff = computeDiff(monitor.lastContent, result.content);
+      console.log(`  📝 Diff: ${diff?.summary || 'computed'}`);
+    }
+    
+    // Store check with content and diff
+    db.addCheck(monitor.id, { 
+      hash: result.hash, 
+      changed, 
+      error: null,
+      content: result.content,
+      diff: diff
+    });
+    
     db.updateMonitor(monitor.id, {
       lastCheck: new Date().toISOString(),
-      lastHash: result.hash
+      lastHash: result.hash,
+      lastContent: result.content
     });
     
     if (changed) {
@@ -262,14 +279,14 @@ async function runScheduler() {
       // Send email notification
       const user = db.getUserById(monitor.userId);
       if (user && monitor.notifyEmail !== false) {
-        notifyChange(monitor, user).catch(err => {
+        notifyChange(monitor, user, diff).catch(err => {
           console.error(`  ❌ Email failed: ${err.message}`);
         });
       }
       
-      // Send webhook notification
+      // Send webhook notification with diff
       if (monitor.notifyWebhook) {
-        notifyWebhook(monitor, monitor.notifyWebhook).catch(err => {
+        notifyWebhook(monitor, monitor.notifyWebhook, diff).catch(err => {
           console.error(`  ❌ Webhook failed: ${err.message}`);
         });
       }
