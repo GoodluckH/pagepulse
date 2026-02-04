@@ -122,4 +122,65 @@ function computeDiff(oldContent, newContent) {
   };
 }
 
-module.exports = { checkPage, computeDiff };
+/**
+ * Check if keywords match based on mode
+ * Returns { shouldNotify, matchedKeywords, reason }
+ */
+function checkKeywords(oldContent, newContent, keywords, mode) {
+  if (!keywords || keywords.length === 0) {
+    return { shouldNotify: true, matchedKeywords: [], reason: null };
+  }
+  
+  const oldLower = (oldContent || '').toLowerCase();
+  const newLower = (newContent || '').toLowerCase();
+  const keywordsLower = keywords.map(k => k.toLowerCase());
+  
+  const appeared = [];
+  const disappeared = [];
+  const present = [];
+  
+  for (const kw of keywordsLower) {
+    const wasPresent = oldLower.includes(kw);
+    const isPresent = newLower.includes(kw);
+    
+    if (!wasPresent && isPresent) appeared.push(kw);
+    if (wasPresent && !isPresent) disappeared.push(kw);
+    if (isPresent) present.push(kw);
+  }
+  
+  switch (mode) {
+    case 'appear':
+      // Only notify when keywords appear
+      if (appeared.length > 0) {
+        return { shouldNotify: true, matchedKeywords: appeared, reason: `Keywords appeared: ${appeared.join(', ')}` };
+      }
+      return { shouldNotify: false, matchedKeywords: [], reason: 'No keywords appeared' };
+      
+    case 'disappear':
+      // Only notify when keywords disappear
+      if (disappeared.length > 0) {
+        return { shouldNotify: true, matchedKeywords: disappeared, reason: `Keywords disappeared: ${disappeared.join(', ')}` };
+      }
+      return { shouldNotify: false, matchedKeywords: [], reason: 'No keywords disappeared' };
+      
+    case 'all':
+      // Notify only if ALL keywords are present
+      if (present.length === keywordsLower.length) {
+        return { shouldNotify: true, matchedKeywords: present, reason: `All keywords found: ${present.join(', ')}` };
+      }
+      return { shouldNotify: false, matchedKeywords: present, reason: 'Not all keywords found' };
+      
+    case 'any':
+    default:
+      // Notify if ANY keyword appears or disappears
+      if (appeared.length > 0 || disappeared.length > 0) {
+        const changes = [];
+        if (appeared.length > 0) changes.push(`appeared: ${appeared.join(', ')}`);
+        if (disappeared.length > 0) changes.push(`disappeared: ${disappeared.join(', ')}`);
+        return { shouldNotify: true, matchedKeywords: [...appeared, ...disappeared], reason: `Keywords ${changes.join('; ')}` };
+      }
+      return { shouldNotify: false, matchedKeywords: [], reason: 'No keyword changes' };
+  }
+}
+
+module.exports = { checkPage, computeDiff, checkKeywords };

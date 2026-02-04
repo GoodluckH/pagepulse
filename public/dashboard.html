@@ -133,6 +133,20 @@
           <option value="slack">Slack/Discord (Rich formatting)</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Keyword Alerts (optional)</label>
+        <input type="text" id="monitor-keywords" placeholder="price, sale, discount (comma separated)">
+        <small>Only notify when these keywords appear/disappear</small>
+      </div>
+      <div class="form-group">
+        <label>Keyword Mode</label>
+        <select id="monitor-keyword-mode">
+          <option value="any">Any keyword changes</option>
+          <option value="appear">Only when keywords appear</option>
+          <option value="disappear">Only when keywords disappear</option>
+          <option value="all">All keywords must be present</option>
+        </select>
+      </div>
       <div class="actions">
         <button class="btn btn-primary" onclick="addMonitor()">Create Monitor</button>
         <button class="btn btn-outline" onclick="hideAddMonitor()">Cancel</button>
@@ -343,6 +357,11 @@ async function addMonitor() {
   const selector = document.getElementById('monitor-selector').value;
   const webhook = document.getElementById('monitor-webhook').value;
   const webhookType = document.getElementById('monitor-webhook-type').value;
+  const keywordsRaw = document.getElementById('monitor-keywords').value;
+  const keywordMode = document.getElementById('monitor-keyword-mode').value;
+  
+  // Parse keywords
+  const keywords = keywordsRaw ? keywordsRaw.split(',').map(k => k.trim()).filter(k => k) : [];
   
   if (!name || !url) {
     alert('Please enter a name and URL');
@@ -357,7 +376,9 @@ async function addMonitor() {
       url, 
       selector: selector || undefined,
       notify_webhook: webhook || undefined,
-      webhook_type: webhookType
+      webhook_type: webhookType,
+      keywords: keywords.length > 0 ? keywords : undefined,
+      keyword_mode: keywords.length > 0 ? keywordMode : undefined
     })
   });
   const data = await res.json();
@@ -368,6 +389,7 @@ async function addMonitor() {
     document.getElementById('monitor-url').value = '';
     document.getElementById('monitor-selector').value = '';
     document.getElementById('monitor-webhook').value = '';
+    document.getElementById('monitor-keywords').value = '';
     loadMonitors();
     loadAccount();
   } else {

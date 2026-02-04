@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
 const db = require('./db');
-const { checkPage, computeDiff } = require('./checker');
+const { checkPage, computeDiff, checkKeywords } = require('./checker');
 const { notifyChange, notifyWebhook, notifySlack } = require('./notifier');
 
 const app = express();
@@ -112,7 +112,7 @@ app.get('/api/monitors', auth, (req, res) => {
 });
 
 app.post('/api/monitors', auth, (req, res) => {
-  const { name, url, check_interval, selector, notify_webhook, webhook_type } = req.body;
+  const { name, url, check_interval, selector, notify_webhook, webhook_type, keywords, keyword_mode } = req.body;
   if (!name || !url) return res.status(400).json({ error: 'Name and URL required' });
   
   const limits = LIMITS[req.user.plan] || LIMITS.free;
@@ -129,7 +129,9 @@ app.post('/api/monitors', auth, (req, res) => {
     checkInterval: interval,
     selector,
     notifyWebhook: notify_webhook,
-    webhookType: webhook_type || 'standard' // 'standard' or 'slack'
+    webhookType: webhook_type || 'standard', // 'standard' or 'slack'
+    keywords: keywords || [], // Array of keywords to watch for
+    keywordMode: keyword_mode || 'any' // 'any', 'all', 'appear', 'disappear'
   });
   
   res.json({ success: true, monitor });
@@ -277,20 +279,37 @@ async function runScheduler() {
     if (changed) {
       console.log(`  🔔 CHANGE DETECTED!`);
       
-      // Send email notification
-      const user = db.getUserById(monitor.userId);
-      if (user && monitor.notifyEmail !== false) {
-        notifyChange(monitor, user, diff).catch(err => {
-          console.error(`  ❌ Email failed: ${err.message}`);
-        });
-      }
+      // Check keyword filters
+      const keywordResult = checkKeywords(
+        monitor.lastContent, 
+        result.content, 
+        monitor.keywords, 
+        monitor.keywordMode
+      );
       
-      // Send webhook notification with diff
-      if (monitor.notifyWebhook) {
-        const webhookFn = monitor.webhookType === 'slack' ? notifySlack : notifyWebhook;
-        webhookFn(monitor, monitor.notifyWebhook, diff).catch(err => {
-          console.error(`  ❌ Webhook failed: ${err.message}`);
-        });
+      if (!keywordResult.shouldNotify && monitor.keywords?.length > 0) {
+        console.log(`  ⏭️ Skipped notification: ${keywordResult.reason}`);
+      } else {
+        // Add keyword info to diff
+        if (keywordResult.matchedKeywords?.length > 0 && diff) {
+          diff.keywordMatch = keywordResult.reason;
+        }
+        
+        // Send email notification
+        const user = db.getUserById(monitor.userId);
+        if (user && monitor.notifyEmail !== false) {
+          notifyChange(monitor, user, diff).catch(err => {
+            console.error(`  ❌ Email failed: ${err.message}`);
+          });
+        }
+        
+        // Send webhook notification with diff
+        if (monitor.notifyWebhook) {
+          const webhookFn = monitor.webhookType === 'slack' ? notifySlack : notifyWebhook;
+          webhookFn(monitor, monitor.notifyWebhook, diff).catch(err => {
+            console.error(`  ❌ Webhook failed: ${err.message}`);
+          });
+        }
       }
     } else {
       console.log(`  ✓ No change`);
