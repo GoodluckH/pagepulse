@@ -8,7 +8,54 @@ const { notifyChange, notifyWebhook } = require('./notifier');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Simple in-memory rate limiter
+const rateLimitStore = new Map();
+function rateLimit(windowMs, maxRequests) {
+  return (req, res, next) => {
+    const key = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    
+    if (!rateLimitStore.has(key)) {
+      rateLimitStore.set(key, []);
+    }
+    
+    const requests = rateLimitStore.get(key).filter(t => t > windowStart);
+    requests.push(now);
+    rateLimitStore.set(key, requests);
+    
+    if (requests.length > maxRequests) {
+      return res.status(429).json({ 
+        error: 'rate_limit_exceeded',
+        message: 'Too many requests. Please slow down.',
+        retry_after: Math.ceil(windowMs / 1000)
+      });
+    }
+    next();
+  };
+}
+
+// Cleanup rate limit store every 5 minutes
+setInterval(() => {
+  const cutoff = Date.now() - 300000;
+  for (const [key, times] of rateLimitStore.entries()) {
+    const valid = times.filter(t => t > cutoff);
+    if (valid.length === 0) rateLimitStore.delete(key);
+    else rateLimitStore.set(key, valid);
+  }
+}, 300000);
+
 app.use(express.json());
+
+// CORS headers for API access
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Plan limits
@@ -30,8 +77,13 @@ function auth(req, res, next) {
   next();
 }
 
+// Rate limiters
+const authLimiter = rateLimit(60000, 5);      // 5 requests per minute for auth
+const apiLimiter = rateLimit(60000, 60);      // 60 requests per minute for API
+const newsletterLimiter = rateLimit(3600000, 3); // 3 per hour for newsletter
+
 // Public routes
-app.post('/api/register', (req, res) => {
+app.post('/api/register', authLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   
@@ -41,7 +93,7 @@ app.post('/api/register', (req, res) => {
   res.json({ success: true, api_key: user.apiKey, plan: user.plan });
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', authLimiter, (req, res) => {
   const { email, password } = req.body;
   const user = db.getUserByEmail(email);
   
@@ -162,7 +214,7 @@ app.get('/api/account', auth, (req, res) => {
 });
 
 // Newsletter subscription
-app.post('/api/newsletter', (req, res) => {
+app.post('/api/newsletter', newsletterLimiter, (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Valid email required' });
