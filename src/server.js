@@ -3,7 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const db = require('./db');
 const { checkPage, computeDiff } = require('./checker');
-const { notifyChange, notifyWebhook } = require('./notifier');
+const { notifyChange, notifyWebhook, notifySlack } = require('./notifier');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -112,7 +112,7 @@ app.get('/api/monitors', auth, (req, res) => {
 });
 
 app.post('/api/monitors', auth, (req, res) => {
-  const { name, url, check_interval, selector, notify_webhook } = req.body;
+  const { name, url, check_interval, selector, notify_webhook, webhook_type } = req.body;
   if (!name || !url) return res.status(400).json({ error: 'Name and URL required' });
   
   const limits = LIMITS[req.user.plan] || LIMITS.free;
@@ -128,7 +128,8 @@ app.post('/api/monitors', auth, (req, res) => {
     url,
     checkInterval: interval,
     selector,
-    notifyWebhook: notify_webhook
+    notifyWebhook: notify_webhook,
+    webhookType: webhook_type || 'standard' // 'standard' or 'slack'
   });
   
   res.json({ success: true, monitor });
@@ -286,7 +287,8 @@ async function runScheduler() {
       
       // Send webhook notification with diff
       if (monitor.notifyWebhook) {
-        notifyWebhook(monitor, monitor.notifyWebhook, diff).catch(err => {
+        const webhookFn = monitor.webhookType === 'slack' ? notifySlack : notifyWebhook;
+        webhookFn(monitor, monitor.notifyWebhook, diff).catch(err => {
           console.error(`  ❌ Webhook failed: ${err.message}`);
         });
       }

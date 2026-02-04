@@ -172,8 +172,78 @@ async function notifyWebhook(monitor, webhookUrl, diff = null) {
   });
 }
 
+/**
+ * Send Slack-formatted webhook (for Slack/Discord)
+ */
+async function notifySlack(monitor, webhookUrl, diff = null) {
+  if (!webhookUrl) return { success: false, error: 'No webhook URL' };
+
+  // Slack-compatible payload (also works with Discord webhooks)
+  const payload = JSON.stringify({
+    text: `🔔 Page changed: *${monitor.name}*`,
+    blocks: [
+      {
+        type: "header",
+        text: { type: "plain_text", text: "🔔 Page Change Detected", emoji: true }
+      },
+      {
+        type: "section",
+        fields: [
+          { type: "mrkdwn", text: `*Monitor:*\n${monitor.name}` },
+          { type: "mrkdwn", text: `*URL:*\n<${monitor.url}|View Page>` }
+        ]
+      },
+      ...(diff ? [{
+        type: "section",
+        text: { type: "mrkdwn", text: `*What Changed:*\n${diff.summary || 'Content updated'}` }
+      }] : []),
+      ...(diff?.added?.length ? [{
+        type: "context",
+        elements: [{ type: "mrkdwn", text: `✅ *Added:* ${diff.added.slice(0, 5).join(', ')}` }]
+      }] : []),
+      ...(diff?.removed?.length ? [{
+        type: "context",
+        elements: [{ type: "mrkdwn", text: `❌ *Removed:* ${diff.removed.slice(0, 5).join(', ')}` }]
+      }] : []),
+      {
+        type: "context",
+        elements: [{ type: "mrkdwn", text: `⏰ ${new Date().toUTCString()}` }]
+      }
+    ]
+  });
+
+  return new Promise((resolve) => {
+    const url = new URL(webhookUrl);
+    const protocol = url.protocol === 'https:' ? https : require('http');
+
+    const req = protocol.request({
+      hostname: url.hostname,
+      port: url.port,
+      path: url.pathname + url.search,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload),
+        'User-Agent': 'PagePulse/1.0'
+      }
+    }, (res) => {
+      console.log(`[SLACK] ${webhookUrl} - ${res.statusCode}`);
+      resolve({ success: res.statusCode >= 200 && res.statusCode < 300 });
+    });
+
+    req.on('error', (err) => {
+      console.error(`[SLACK] Error: ${err.message}`);
+      resolve({ success: false, error: err.message });
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
 module.exports = {
   sendEmail,
   notifyChange,
-  notifyWebhook
+  notifyWebhook,
+  notifySlack
 };
