@@ -7,9 +7,10 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;min-height:100vh}
-    .nav{background:#667eea;color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
+    .nav{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
     .nav h1{font-size:1.25rem}
     .nav button{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer}
+    .nav button:hover{background:rgba(255,255,255,0.3)}
     .container{max-width:1000px;margin:0 auto;padding:20px}
     .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
     .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}
@@ -17,21 +18,45 @@
     .stat-value{font-size:2rem;font-weight:700;color:#667eea}
     .stat-label{color:#666;font-size:0.9rem}
     h2{margin-bottom:15px;color:#333}
-    .monitor{border:1px solid #eee;border-radius:8px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-    .monitor-info h3{font-size:1rem;margin-bottom:5px}
-    .monitor-info p{color:#666;font-size:0.85rem}
-    .monitor-status{padding:6px 12px;border-radius:20px;font-size:0.8rem;font-weight:600}
+    .monitor{border:1px solid #eee;border-radius:12px;padding:20px;margin-bottom:15px;transition:box-shadow 0.2s}
+    .monitor:hover{box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+    .monitor-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .monitor-info h3{font-size:1.1rem;margin-bottom:5px;color:#333}
+    .monitor-info p{color:#666;font-size:0.85rem;word-break:break-all}
+    .monitor-status{padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;text-transform:uppercase}
     .status-active{background:#d4edda;color:#155724}
+    .status-changed{background:#fff3cd;color:#856404}
     .status-error{background:#f8d7da;color:#721c24}
-    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
-    .btn-primary{background:#667eea;color:#fff}
-    .btn-sm{padding:6px 12px;font-size:0.85rem}
+    .status-pending{background:#e9ecef;color:#495057}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;transition:transform 0.1s}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+    .btn-sm{padding:8px 14px;font-size:0.85rem}
+    .btn-outline{background:transparent;border:2px solid #667eea;color:#667eea}
     .form-group{margin-bottom:15px}
-    .form-group label{display:block;margin-bottom:5px;font-weight:500}
-    .form-group input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+    .form-group label{display:block;margin-bottom:5px;font-weight:500;color:#333}
+    .form-group input,.form-group select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:1rem}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
+    .form-group small{color:#666;font-size:0.8rem;margin-top:4px;display:block}
     #login-section,#dashboard-section{display:none}
     .empty{text-align:center;padding:40px;color:#666}
-    .actions{display:flex;gap:10px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .change-badge{display:inline-flex;align-items:center;gap:6px;background:#fff3cd;color:#856404;padding:8px 12px;border-radius:8px;font-size:0.85rem;margin-top:10px}
+    .change-badge.no-change{background:#d4edda;color:#155724}
+    .diff-box{background:#f8f9fa;border-radius:8px;padding:15px;margin-top:12px;font-size:0.85rem}
+    .diff-added{color:#155724;background:#d4edda;padding:2px 6px;border-radius:4px;margin:2px;display:inline-block}
+    .diff-removed{color:#721c24;background:#f8d7da;padding:2px 6px;border-radius:4px;margin:2px;display:inline-block;text-decoration:line-through}
+    .history-item{border-left:3px solid #667eea;padding:10px 15px;margin:10px 0;background:#f8f9fa;border-radius:0 8px 8px 0}
+    .history-item.changed{border-left-color:#ffc107}
+    .history-item .time{font-size:0.8rem;color:#666}
+    .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000}
+    .modal.active{display:flex}
+    .modal-content{background:#fff;border-radius:12px;padding:25px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#666}
+    .tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #eee;padding-bottom:10px}
+    .tab{padding:8px 16px;border:none;background:none;cursor:pointer;font-weight:500;color:#666;border-radius:8px}
+    .tab.active{background:#667eea;color:#fff}
   </style>
 </head>
 <body>
@@ -61,12 +86,15 @@
 <div id="dashboard-section">
   <div class="nav">
     <h1>🔔 PagePulse</h1>
-    <button onclick="logout()">Logout</button>
+    <div>
+      <span id="user-email" style="margin-right:15px;opacity:0.9"></span>
+      <button onclick="logout()">Logout</button>
+    </div>
   </div>
   <div class="container">
     <div class="stats">
       <div class="stat"><div class="stat-value" id="stat-monitors">0</div><div class="stat-label">Monitors</div></div>
-      <div class="stat"><div class="stat-value" id="stat-checks">0</div><div class="stat-label">Total Checks</div></div>
+      <div class="stat"><div class="stat-value" id="stat-changes">0</div><div class="stat-label">Changes Detected</div></div>
       <div class="stat"><div class="stat-value" id="stat-plan">Free</div><div class="stat-label">Plan</div></div>
     </div>
     
@@ -82,26 +110,51 @@
       <h2>Add New Monitor</h2>
       <div class="form-group">
         <label>Name</label>
-        <input type="text" id="monitor-name" placeholder="My Price Tracker">
+        <input type="text" id="monitor-name" placeholder="e.g., Product Price Tracker">
       </div>
       <div class="form-group">
         <label>URL to Monitor</label>
         <input type="url" id="monitor-url" placeholder="https://example.com/product">
+        <small>The webpage you want to track for changes</small>
+      </div>
+      <div class="form-group">
+        <label>CSS Selector (optional)</label>
+        <input type="text" id="monitor-selector" placeholder="e.g., .price, #stock-status">
+        <small>Monitor only a specific part of the page</small>
       </div>
       <div class="form-group">
         <label>Webhook URL (optional)</label>
-        <input type="url" id="monitor-webhook" placeholder="https://hooks.slack.com/...">
+        <input type="url" id="monitor-webhook" placeholder="https://hooks.slack.com/services/...">
+      </div>
+      <div class="form-group">
+        <label>Webhook Format</label>
+        <select id="monitor-webhook-type">
+          <option value="standard">Standard JSON</option>
+          <option value="slack">Slack/Discord (Rich formatting)</option>
+        </select>
       </div>
       <div class="actions">
         <button class="btn btn-primary" onclick="addMonitor()">Create Monitor</button>
-        <button class="btn" onclick="hideAddMonitor()">Cancel</button>
+        <button class="btn btn-outline" onclick="hideAddMonitor()">Cancel</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- History Modal -->
+<div class="modal" id="history-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="history-title">Change History</h2>
+      <button class="modal-close" onclick="closeHistory()">&times;</button>
+    </div>
+    <div id="history-content"></div>
+  </div>
+</div>
+
 <script>
 let apiKey = localStorage.getItem('pagepulse_key');
+let monitors = [];
 
 window.onload = () => {
   if (apiKey) { showDashboard(); } 
@@ -150,46 +203,135 @@ async function loadAccount() {
   const data = await res.json();
   document.getElementById('stat-monitors').textContent = data.monitors;
   document.getElementById('stat-plan').textContent = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+  document.getElementById('user-email').textContent = data.email;
 }
 
 async function loadMonitors() {
   const res = await fetch('/api/monitors', {headers: {'X-API-Key': apiKey}});
   const data = await res.json();
+  monitors = data.monitors;
   const list = document.getElementById('monitors-list');
   
-  if (data.monitors.length === 0) {
-    list.innerHTML = '<div class="empty">No monitors yet. Create your first one!</div>';
-    document.getElementById('stat-checks').textContent = '0';
+  if (monitors.length === 0) {
+    list.innerHTML = '<div class="empty">No monitors yet. Create your first one to start tracking changes!</div>';
+    document.getElementById('stat-changes').textContent = '0';
     return;
   }
   
-  let totalChecks = 0;
-  list.innerHTML = data.monitors.map(m => {
-    const status = m.lastCheck ? 'active' : 'pending';
+  // Load history for each monitor to count changes
+  let totalChanges = 0;
+  for (const m of monitors) {
+    try {
+      const histRes = await fetch(`/api/monitors/${m.id}/history?limit=50`, {headers: {'X-API-Key': apiKey}});
+      const histData = await histRes.json();
+      m.history = histData.checks || [];
+      m.summary = histData.summary || {};
+      totalChanges += m.summary.changesDetected || 0;
+    } catch(e) { m.history = []; }
+  }
+  
+  document.getElementById('stat-changes').textContent = totalChanges;
+  
+  list.innerHTML = monitors.map(m => {
+    const lastChange = m.history.find(c => c.changed);
+    const status = m.summary?.errors > 0 ? 'error' : (lastChange ? 'changed' : (m.lastCheck ? 'active' : 'pending'));
+    const statusText = status === 'error' ? 'Error' : (status === 'changed' ? 'Changes detected' : (status === 'active' ? 'Monitoring' : 'Pending'));
+    
+    let diffHtml = '';
+    if (lastChange?.diff) {
+      diffHtml = `
+        <div class="diff-box">
+          <strong>Last change:</strong> ${lastChange.diff.summary || 'Content updated'}
+          ${lastChange.diff.added?.length ? `<div style="margin-top:8px">${lastChange.diff.added.slice(0,5).map(w => `<span class="diff-added">+${w}</span>`).join('')}</div>` : ''}
+          ${lastChange.diff.removed?.length ? `<div style="margin-top:4px">${lastChange.diff.removed.slice(0,5).map(w => `<span class="diff-removed">${w}</span>`).join('')}</div>` : ''}
+        </div>
+      `;
+    }
+    
     return `
       <div class="monitor">
-        <div class="monitor-info">
-          <h3>${m.name}</h3>
-          <p>${m.url}</p>
-          <p>Last check: ${m.lastCheck ? new Date(m.lastCheck).toLocaleString() : 'Never'}</p>
+        <div class="monitor-header">
+          <div class="monitor-info">
+            <h3>${escapeHtml(m.name)}</h3>
+            <p>${escapeHtml(m.url)}</p>
+            ${m.selector ? `<p style="color:#667eea">Selector: ${escapeHtml(m.selector)}</p>` : ''}
+            <p>Last check: ${m.lastCheck ? new Date(m.lastCheck).toLocaleString() : 'Never'}</p>
+          </div>
+          <span class="monitor-status status-${status}">${statusText}</span>
         </div>
-        <div class="actions">
-          <button class="btn btn-sm" onclick="checkNow('${m.id}')">Check Now</button>
-          <span class="monitor-status status-${status}">${status}</span>
+        ${diffHtml}
+        <div class="actions" style="margin-top:15px">
+          <button class="btn btn-sm btn-primary" onclick="checkNow('${m.id}')">Check Now</button>
+          <button class="btn btn-sm btn-outline" onclick="showHistory('${m.id}')">View History</button>
+          <button class="btn btn-sm" style="background:#f8d7da;color:#721c24" onclick="deleteMonitor('${m.id}')">Delete</button>
         </div>
       </div>
     `;
   }).join('');
 }
 
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function checkNow(id) {
+  const btn = event.target;
+  btn.textContent = 'Checking...';
+  btn.disabled = true;
+  
   const res = await fetch(`/api/monitors/${id}/check`, {
     method: 'POST',
     headers: {'X-API-Key': apiKey}
   });
   const data = await res.json();
-  alert(data.success ? (data.changed ? '🔔 Change detected!' : '✓ No change') : '❌ ' + data.error);
+  
+  if (data.success) {
+    alert(data.changed ? '🔔 Change detected!' : '✓ No change detected');
+  } else {
+    alert('❌ Error: ' + data.error);
+  }
+  
+  btn.textContent = 'Check Now';
+  btn.disabled = false;
   loadMonitors();
+}
+
+async function showHistory(id) {
+  const m = monitors.find(mon => mon.id === id);
+  if (!m) return;
+  
+  document.getElementById('history-title').textContent = `History: ${m.name}`;
+  
+  const content = document.getElementById('history-content');
+  if (!m.history || m.history.length === 0) {
+    content.innerHTML = '<div class="empty">No checks yet</div>';
+  } else {
+    content.innerHTML = m.history.map(check => `
+      <div class="history-item ${check.changed ? 'changed' : ''}">
+        <div class="time">${new Date(check.checkedAt).toLocaleString()}</div>
+        ${check.error ? `<div style="color:#721c24">❌ Error: ${check.error}</div>` : ''}
+        ${check.changed ? `<div style="color:#856404">🔔 Change detected</div>` : (check.error ? '' : `<div style="color:#155724">✓ No change</div>`)}
+        ${check.diff ? `<div style="margin-top:8px;font-size:0.85rem">${check.diff.summary || 'Content updated'}</div>` : ''}
+      </div>
+    `).join('');
+  }
+  
+  document.getElementById('history-modal').classList.add('active');
+}
+
+function closeHistory() {
+  document.getElementById('history-modal').classList.remove('active');
+}
+
+async function deleteMonitor(id) {
+  if (!confirm('Delete this monitor? This cannot be undone.')) return;
+  
+  await fetch(`/api/monitors/${id}`, {
+    method: 'DELETE',
+    headers: {'X-API-Key': apiKey}
+  });
+  loadMonitors();
+  loadAccount();
 }
 
 function showAddMonitor() { document.getElementById('add-monitor-form').style.display = 'block'; }
@@ -198,12 +340,25 @@ function hideAddMonitor() { document.getElementById('add-monitor-form').style.di
 async function addMonitor() {
   const name = document.getElementById('monitor-name').value;
   const url = document.getElementById('monitor-url').value;
+  const selector = document.getElementById('monitor-selector').value;
   const webhook = document.getElementById('monitor-webhook').value;
+  const webhookType = document.getElementById('monitor-webhook-type').value;
+  
+  if (!name || !url) {
+    alert('Please enter a name and URL');
+    return;
+  }
   
   const res = await fetch('/api/monitors', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'X-API-Key': apiKey},
-    body: JSON.stringify({name, url, notify_webhook: webhook || undefined})
+    body: JSON.stringify({
+      name, 
+      url, 
+      selector: selector || undefined,
+      notify_webhook: webhook || undefined,
+      webhook_type: webhookType
+    })
   });
   const data = await res.json();
   
@@ -211,6 +366,7 @@ async function addMonitor() {
     hideAddMonitor();
     document.getElementById('monitor-name').value = '';
     document.getElementById('monitor-url').value = '';
+    document.getElementById('monitor-selector').value = '';
     document.getElementById('monitor-webhook').value = '';
     loadMonitors();
     loadAccount();
@@ -218,6 +374,11 @@ async function addMonitor() {
     alert('Error: ' + data.error);
   }
 }
+
+// Close modal on outside click
+document.getElementById('history-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'history-modal') closeHistory();
+});
 </script>
 </body>
 </html>
