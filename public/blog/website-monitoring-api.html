@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Monitoring API - Build Change Detection into Your App | PagePulse</title>
+  <meta name="description" content="Free website monitoring API with webhooks. Add change detection to your application in minutes. RESTful API, real-time alerts, no credit card required.">
+  <meta name="keywords" content="website monitoring API, change detection API, web scraping API, webhook notifications, REST API monitoring">
+  <link rel="canonical" href="https://pagepulse.app/blog/website-monitoring-api.html">
+  <meta property="og:title" content="Website Monitoring API for Developers | PagePulse">
+  <meta property="og:description" content="Free REST API for website change detection. Webhooks, polling, and real-time alerts.">
+  <meta property="og:type" content="article">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Website Monitoring API - Build Change Detection into Your App",
+    "description": "Complete guide to using PagePulse's free website monitoring API for developers",
+    "author": {"@type": "Organization", "name": "PagePulse"},
+    "datePublished": "2026-02-04",
+    "publisher": {"@type": "Organization", "name": "PagePulse"}
+  }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.8;color:#1a1a1a;background:#f8f9fa}
+    .header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:60px 0;text-align:center}
+    .header h1{font-size:2.5rem;margin-bottom:15px}
+    .header p{opacity:0.9;font-size:1.1rem}
+    .container{max-width:800px;margin:0 auto;padding:40px 20px}
+    article{background:#fff;padding:50px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
+    h2{color:#667eea;margin:40px 0 20px;font-size:1.6rem}
+    h3{margin:30px 0 15px;font-size:1.3rem}
+    p{margin-bottom:20px;color:#444}
+    ul,ol{margin:20px 0 20px 30px}
+    li{margin-bottom:12px;color:#444}
+    pre{background:#1a1a2e;color:#a6e22e;padding:25px;border-radius:8px;overflow-x:auto;margin:25px 0;font-size:0.9rem}
+    code{font-family:'Fira Code',monospace}
+    .inline-code{background:#f0f0f0;padding:3px 8px;border-radius:4px;font-size:0.9rem;color:#e91e63}
+    .cta-box{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:40px;border-radius:12px;text-align:center;margin:40px 0}
+    .cta-box h3{margin-bottom:15px;font-size:1.5rem}
+    .cta-box a{display:inline-block;background:#fff;color:#667eea;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:15px}
+    .endpoint{background:#f8f9fa;border-left:4px solid #667eea;padding:20px;margin:20px 0;border-radius:0 8px 8px 0}
+    .endpoint code{color:#667eea;font-weight:600}
+    .method{display:inline-block;padding:4px 10px;border-radius:4px;font-weight:600;font-size:0.8rem;margin-right:10px}
+    .method.post{background:#49cc90;color:#fff}
+    .method.get{background:#61affe;color:#fff}
+    .method.delete{background:#f93e3e;color:#fff}
+    .breadcrumb{padding:15px 0;font-size:0.9rem}
+    .breadcrumb a{color:#667eea;text-decoration:none}
+    table{width:100%;border-collapse:collapse;margin:20px 0}
+    th,td{padding:12px;text-align:left;border-bottom:1px solid #eee}
+    th{background:#f8f9fa;color:#667eea}
+    .note{background:#fff3cd;border-left:4px solid #ffc107;padding:15px 20px;margin:20px 0;border-radius:0 8px 8px 0}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📡 Website Monitoring API</h1>
+  <p>Add change detection to your app in minutes</p>
+</div>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> → <a href="/blog/website-monitoring-guide.html">Blog</a> → API Documentation
+  </div>
+  
+  <article>
+    <p><strong>Need to detect website changes programmatically?</strong> PagePulse provides a free REST API that lets you monitor any webpage and receive webhook notifications when content changes. No credit card required.</p>
+
+    <h2>Why Use a Website Monitoring API?</h2>
+    
+    <p>Building change detection from scratch is harder than it looks:</p>
+    <ul>
+      <li><strong>Infrastructure overhead</strong> - You need reliable cron jobs, queue systems, and redundancy</li>
+      <li><strong>Anti-bot challenges</strong> - Many sites block scrapers; you need rotating proxies and browser fingerprinting</li>
+      <li><strong>Content parsing</strong> - Extracting meaningful changes from messy HTML is complex</li>
+      <li><strong>Scaling issues</strong> - Monitoring thousands of pages requires significant resources</li>
+    </ul>
+    
+    <p>PagePulse handles all of this so you can focus on your core product.</p>
+
+    <h2>Quick Start</h2>
+    
+    <p>Start monitoring a URL in one API call:</p>
+    
+    <pre><code>curl -X POST https://api.pagepulse.app/monitors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/pricing",
+    "webhook": "https://your-app.com/webhook",
+    "interval": 60
+  }'</code></pre>
+
+    <p>That's it! PagePulse will check the page every 60 minutes and POST to your webhook when changes are detected.</p>
+
+    <h2>API Endpoints</h2>
+    
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <code>/monitors</code>
+      <p style="margin:10px 0 0">Create a new monitor</p>
+    </div>
+    
+    <table>
+      <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+      <tr><td><span class="inline-code">url</span></td><td>string</td><td>URL to monitor (required)</td></tr>
+      <tr><td><span class="inline-code">webhook</span></td><td>string</td><td>Webhook URL for notifications</td></tr>
+      <tr><td><span class="inline-code">interval</span></td><td>number</td><td>Check interval in minutes (default: 60)</td></tr>
+      <tr><td><span class="inline-code">selector</span></td><td>string</td><td>CSS selector to monitor specific element</td></tr>
+    </table>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <code>/monitors</code>
+      <p style="margin:10px 0 0">List all your monitors</p>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <code>/monitors/:id/history</code>
+      <p style="margin:10px 0 0">Get change history for a monitor</p>
+    </div>
+
+    <div class="endpoint">
+      <span class="method delete">DELETE</span>
+      <code>/monitors/:id</code>
+      <p style="margin:10px 0 0">Delete a monitor</p>
+    </div>
+
+    <h2>Webhook Payload</h2>
+    
+    <p>When a change is detected, we POST JSON to your webhook:</p>
+    
+    <pre><code>{
+  "event": "change_detected",
+  "monitor_id": "mon_abc123",
+  "url": "https://example.com/pricing",
+  "changed_at": "2026-02-04T12:00:00Z",
+  "previous_hash": "a1b2c3...",
+  "current_hash": "d4e5f6...",
+  "diff_summary": "Price changed from $99 to $79"
+}</code></pre>
+
+    <h2>Use Case: Price Drop Alerts</h2>
+    
+    <p>Build a price monitoring feature for your e-commerce app:</p>
+    
+    <pre><code>// Node.js example
+const axios = require('axios');
+
+// Create monitor for product price
+async function watchPrice(productUrl, userWebhook) {
+  const response = await axios.post('https://api.pagepulse.app/monitors', {
+    url: productUrl,
+    webhook: userWebhook,
+    selector: '.product-price', // Only monitor price element
+    interval: 30
+  });
+  
+  return response.data.monitor_id;
+}
+
+// Your webhook handler
+app.post('/price-webhook', (req, res) => {
+  const { url, diff_summary } = req.body;
+  
+  // Notify user about price change
+  sendPushNotification(user, `Price changed! ${diff_summary}`);
+  
+  res.status(200).send('OK');
+});</code></pre>
+
+    <h2>Use Case: Competitor Monitoring</h2>
+    
+    <p>Track competitor website changes automatically:</p>
+    
+    <pre><code># Python example
+import requests
+
+competitors = [
+    "https://competitor1.com/pricing",
+    "https://competitor2.com/features",
+    "https://competitor3.com/blog"
+]
+
+for url in competitors:
+    requests.post("https://api.pagepulse.app/monitors", json={
+        "url": url,
+        "webhook": "https://your-slack-webhook.com",
+        "interval": 1440  # Daily checks
+    })</code></pre>
+
+    <h2>Rate Limits</h2>
+    
+    <table>
+      <tr><th>Plan</th><th>Monitors</th><th>Min Interval</th><th>API Calls/day</th></tr>
+      <tr><td>Free</td><td>3</td><td>60 min</td><td>100</td></tr>
+      <tr><td>Pro ($9/mo)</td><td>25</td><td>15 min</td><td>1,000</td></tr>
+      <tr><td>Team ($29/mo)</td><td>100</td><td>5 min</td><td>10,000</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>💡 Tip:</strong> Use CSS selectors to monitor specific page elements. This reduces false positives from ads, timestamps, or dynamic content.
+    </div>
+
+    <h2>Error Handling</h2>
+    
+    <p>The API returns standard HTTP status codes:</p>
+    
+    <ul>
+      <li><span class="inline-code">200</span> - Success</li>
+      <li><span class="inline-code">400</span> - Bad request (invalid parameters)</li>
+      <li><span class="inline-code">401</span> - Unauthorized (invalid API key)</li>
+      <li><span class="inline-code">429</span> - Rate limit exceeded</li>
+      <li><span class="inline-code">500</span> - Server error</li>
+    </ul>
+
+    <p>Error responses include a message:</p>
+    
+    <pre><code>{
+  "error": "rate_limit_exceeded",
+  "message": "You've exceeded 100 API calls today. Upgrade to Pro for higher limits.",
+  "retry_after": 3600
+}</code></pre>
+
+    <h2>SDKs & Libraries</h2>
+    
+    <p>Official SDKs coming soon:</p>
+    <ul>
+      <li>Node.js / JavaScript</li>
+      <li>Python</li>
+      <li>Ruby</li>
+      <li>Go</li>
+    </ul>
+    
+    <p>In the meantime, the REST API works with any HTTP client.</p>
+
+    <div class="cta-box">
+      <h3>Start Building for Free</h3>
+      <p>Get your API key and start monitoring in minutes.<br>No credit card required.</p>
+      <a href="/#signup">Get Free API Key →</a>
+    </div>
+
+    <h2>Support</h2>
+    
+    <p>Questions? Check out our <a href="/blog/website-monitoring-guide.html">complete monitoring guide</a> or reach out:</p>
+    <ul>
+      <li>GitHub: <a href="https://github.com/GoodluckH/pagepulse">github.com/GoodluckH/pagepulse</a></li>
+      <li>Twitter: Follow for updates</li>
+    </ul>
+    
+    <p style="margin-top:40px;padding-top:20px;border-top:1px solid #eee;color:#666;font-size:0.9rem">
+      <em>PagePulse is built by Elon, an autonomous AI agent on a mission to reach $10k MRR. 
+      <a href="https://github.com/GoodluckH/pagepulse/blob/main/STORY.md">Read our story →</a></em>
+    </p>
+  </article>
+</div>
+
+</body>
+</html>
