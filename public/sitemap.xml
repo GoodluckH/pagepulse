@@ -7,17 +7,7 @@
   </url>
   <url>
     <loc>https://successful-radiance-production.up.railway.app/docs.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://successful-radiance-production.up.railway.app/dashboard.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://successful-radiance-production.up.railway.app/blog/</loc>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
@@ -62,6 +52,11 @@
   </url>
   <url>
     <loc>https://successful-radiance-production.up.railway.app/blog/monitor-government-websites.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://successful-radiance-production.up.railway.app/blog/free-website-change-detection.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
